@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request
 from flask_restx import Api, Resource
 
@@ -5,20 +7,50 @@ from src.server.instance import server
 
 app, api = server.app, server.api
 
-arquivos_teste = [
-    {'id':1, 'nome':'id1'},
-    {'id':2, 'nome':'id2'}
-]
-
 @api.route('/arquivos')
 class Arquivos(Resource):
     def get (self, ):
-        return arquivos_teste
+        return "Success", 200
     
     def post (self, ):
         if 'file' not in request.files:
             return "Arquivo nao encontrado", 500
         
         file = request.files['file']
-        print(file)
-        return arquivos_teste, 200
+
+        if file and file.filename == '':
+            return "Arquivo nao identificado", 500
+        
+        if allowed_file(file.filename):
+            save_file(app.config['UPLOAD_FOLDER'], file)
+            return "Success", 200
+
+        return "Erro", 500
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+def unique_filename(filename, directory):
+    base_name, extension = os.path.splitext(filename)
+    counter = 0
+    unique_filename = filename
+    
+    while os.path.exists(os.path.join(directory, unique_filename)):
+        counter += 1
+        unique_filename = f"{base_name}{counter}{extension}"
+
+    return unique_filename
+
+def save_file(directory, file):
+    controllers_dir = os.path.dirname(os.path.abspath(__file__))
+    src_dir = os.path.dirname(controllers_dir)
+    target_dir = os.path.join(src_dir, directory)
+
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+
+    filename = unique_filename(file.filename, target_dir)
+
+    file_path = os.path.join(target_dir, filename)
+
+    file.save(file_path)

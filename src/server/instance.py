@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restx import Api
 
-UPLOAD_FOLDER = '/files'
+UPLOAD_FOLDER = 'files'
 ALLOWED_EXTENSIONS = {'txt'}
 
 class Server():
