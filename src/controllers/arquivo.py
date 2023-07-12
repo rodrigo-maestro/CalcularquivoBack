@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_restx import Api, Resource
 
 from src.server.instance import server
@@ -9,10 +9,12 @@ app, api = server.app, server.api
 
 @api.route('/arquivos')
 class Arquivos(Resource):
-    def get (self, ):
-        return "Success", 200
+    def get(self, ):
+        file_path = os.path.join(files_dir(),'somaBasica.txt')
+
+        return send_file(file_path, as_attachment=True)
     
-    def post (self, ):
+    def post(self, ):
         if 'file' not in request.files:
             return "Arquivo nao encontrado", 500
         
@@ -22,8 +24,8 @@ class Arquivos(Resource):
             return "Arquivo nao identificado", 500
         
         if allowed_file(file.filename):
-            save_file(app.config['UPLOAD_FOLDER'], file)
-            return "Success", 200
+            save_file(file)
+            return "Sucesso", 200
 
         return "Erro", 500
 
@@ -41,10 +43,8 @@ def unique_filename(filename, directory):
 
     return unique_filename
 
-def save_file(directory, file):
-    controllers_dir = os.path.dirname(os.path.abspath(__file__))
-    src_dir = os.path.dirname(controllers_dir)
-    target_dir = os.path.join(src_dir, directory)
+def save_file(file):
+    target_dir = files_dir()
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
@@ -54,3 +54,10 @@ def save_file(directory, file):
     file_path = os.path.join(target_dir, filename)
 
     file.save(file_path)
+
+def files_dir():
+    controllers_dir = os.path.dirname(os.path.abspath(__file__))
+    src_dir = os.path.dirname(controllers_dir)
+    files_dir = os.path.join(src_dir, app.config['UPLOAD_FOLDER'])
+
+    return files_dir
