@@ -1,6 +1,7 @@
 import os
 import zipfile
 import io
+import re
 
 from flask import Flask, request, send_file
 from flask_restx import Api, Resource
@@ -44,8 +45,9 @@ class Arquivos(Resource):
         if file and file.filename == '':
             return "Arquivo nao identificado", 500
         
-        if allowed_file(file.filename):
-            save_file(file)
+        if allowed_file(file.filename):            
+            file_path = save_file(file)
+            calculate_file(file_path)
             return "Sucesso", 200
 
         return "Erro", 500
@@ -77,9 +79,44 @@ def save_file(file):
 
     file.save(file_path)
 
+    return file_path
+
 def get_files_dir():
     controllers_dir = os.path.dirname(os.path.abspath(__file__))
     src_dir = os.path.dirname(controllers_dir)
     files_dir = os.path.join(src_dir, app.config['UPLOAD_FOLDER'])
 
     return files_dir
+
+def calculate_file(file_path):
+    with open (file_path) as f:
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            print(calculate_line(line))
+
+def calculate_line(line):
+    result = 0
+    counter = 0
+    current_operation = 0
+    digits = re.findall(r'(\d+|\+|-|\*|\/|=)', line)
+    for digit in digits:
+        if digit == '=':
+            return result
+
+        if counter == 0:
+            result += int(digit)        
+        
+        if digit == '+' or digit == '-':
+            current_operation = digit
+        elif digit.isnumeric():
+            if current_operation == '+':
+                result += int(digit)
+            elif current_operation == '-':
+                result -=int(digit)
+                
+        counter += 1
+
+    return result
+        
