@@ -52,6 +52,16 @@ class Arquivos(Resource):
 
         return "Erro", 500
 
+@api.route('/obterDadosArquivos')
+class ObterDadosArquivos(Resource):
+    def get (self, ):
+        files_dir = get_files_dir()
+        pattern = f"_{idUser}.txt"
+
+        filenames = [filename for filename in os.listdir(files_dir) if filename.endswith(pattern)]
+
+        return {"arquivos":filenames}, 200
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
