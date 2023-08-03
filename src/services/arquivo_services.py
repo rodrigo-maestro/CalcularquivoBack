@@ -59,6 +59,18 @@ def obter_nome_unico_arquivo_usuario(nome_arquivo, diretorio_arquivos, id_usuari
 
     return nome_unico
 
+def remover_arquivo(nome_arquivo_busca, id_usuario):
+    diretorio_arquivos = obter_diretorio_arquivos()
+    regra_arquivo_usuario = obter_regra_arquivo_usuario(id_usuario)
+
+    nomes_arquivo = [nome_arquivo for nome_arquivo in os.listdir(diretorio_arquivos) if nome_arquivo == nome_arquivo_busca and nome_arquivo.endswith(regra_arquivo_usuario)]
+
+    if len(nomes_arquivo) == 1:
+        os.remove(os.path.join(diretorio_arquivos, nomes_arquivo[0]))
+        return True
+    
+    return False
+
 def obter_dados_arquivo(id_usuario):
     diretorio_arquivos = obter_diretorio_arquivos()
     regra_arquivo_usuario = obter_regra_arquivo_usuario(id_usuario)

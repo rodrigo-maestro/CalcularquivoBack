@@ -1,10 +1,8 @@
-import io
-
-from flask import Flask, request, send_file
-from flask_restx import Api, Resource
+from flask import request, send_file
+from flask_restx import Resource
 
 from src.server.instance import server
-from src.services.arquivo_services import obter_dados_arquivo, obter_zip_arquivos, salvar_arquivo
+from src.services.arquivo_services import obter_dados_arquivo, obter_zip_arquivos, salvar_arquivo, remover_arquivo
 
 api = server.api
 
@@ -37,3 +35,11 @@ class ObterDadosArquivos(Resource):
         arquivos = obter_dados_arquivo(id_usuario)
 
         return {"arquivos":arquivos}, 200
+    
+@api.route('/deletarArquivo/<string:nome>')
+class DeletarArquivo(Resource):
+    def delete (self, nome):
+        if remover_arquivo(nome, id_usuario):
+            return "Sucesso", 200
+
+        return "Erro ao encontrar arquivo", 500
